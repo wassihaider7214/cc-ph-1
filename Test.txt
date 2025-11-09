@@ -1,0 +1,23 @@
+banoa addNumbers(adad a, adad b) {
+    jaytay (a > 0) {
+        likho a;
+    fair {
+        likho b;
+    }
+    vapis a + b;
+}
+
+adad main() {
+    adad x, y;
+    lo x;
+    lo y;
+    adad result = addNumbers(x, y);
+    
+    jadtak (result < 100) {
+        likho result;
+        roko;
+    }
+    
+    nahito (result == 0) 
+        likho @ "Zero" 
+}
