@@ -1,135 +1,116 @@
 %{
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
 FILE *tokens_file;
-FILE *error_log_file;
-
-void write_token(const char* type, const char* value);
-void write_error(const char* message, int line);
+FILE *error_file;
 int line_num = 1;
+
+void add_token(const char *type, const char *value) {
+    fprintf(tokens_file, "Line %d: %s -> %s\n", line_num, type, value);
+}
+
+void add_error(const char *value) {
+    fprintf(error_file, "Line %d: ERROR - Invalid token '%s'\n", line_num, value);
+}
 %}
 
 %option noyywrap
 
-DELIM       [ \t]
-WS          {DELIM}+
-NEWLINE     \n
-DIGIT       [0-9]
-LETTER      [a-zA-Z]
-ID          {LETTER}({LETTER}|{DIGIT}|_)*
-NUMBER      {DIGIT}+(\.{DIGIT}+)?([eE][-+]?{DIGIT}+)?
-INTEGER     {DIGIT}+
-FLOAT       {DIGIT}+\.{DIGIT}+
-RELOP       [<>]=?|==|!=
-ASSIGN      =
-SEMICOLON   ;
-COMMA       ,
-LPAREN      \(
-RPAREN      \)
-LBRACE      \{
-RBRACE      \}
-QUOTE       ['\"]
-INCREMENT   \+\+
-DECREMENT   --
+DIGIT      [0-9]
+LETTER     [a-zA-Z]
+ID         {LETTER}({LETTER}|{DIGIT}|_)*
+INT        {DIGIT}+
+FLOAT      {DIGIT}+"."{DIGIT}+
+WS         [ \t]+
+NEWLINE    \n
+QUOTE      ['\"]
+
+
 
 %%
 
-"jaytay"        { write_token("KEYWORD_IF", yytext); }
-"fair"          { write_token("KEYWORD_ELSE", yytext); }
-"jadtak"        { write_token("KEYWORD_WHILE", yytext); }
-"harik"         { write_token("KEYWORD_FOR", yytext); }
-"banoa"         { write_token("KEYWORD_FUNCTION", yytext); }
-"vapis"         { write_token("KEYWORD_RETURN", yytext); }
-"sach"          { write_token("KEYWORD_TRUE", yytext); }
-"jhoot"         { write_token("KEYWORD_FALSE", yytext); }
-"adad"          { write_token("TYPE_INTEGER", yytext); }
-"ashariya"      { write_token("TYPE_FLOAT", yytext); }
-"likho"         { write_token("KEYWORD_COUT", yytext); }
-"lo"            { write_token("KEYWORD_CIN", yytext); }
-"harf"          { write_token("TYPE_CHAR", yytext); }
-"nahito"        { write_token("KEYWORD_ELSE_IF", yytext); }
-"roko"          { write_token("KEYWORD_BREAK", yytext); }
+"jaytay"    { add_token("IF", yytext); }
+"fair"      { add_token("ELSE", yytext); }
+"jadtak"    { add_token("WHILE", yytext); }
+"harik"     { add_token("FOR", yytext); }
+"banao"     { add_token("FUNCTION", yytext); }
+"vapis"     { add_token("RETURN", yytext); }
+"sach"      { add_token("TRUE", yytext); }
+"jhoot"     { add_token("FALSE", yytext); }
+"adad"      { add_token("TYPE_INT", yytext); }
+"harf"      { add_token("TYPE_CHAR", yytext); }
+"likho"     { add_token("COUT", yytext); }
+"lo"        { add_token("CIN", yytext); }
+"ashariya"  { add_token("FLOAT", yytext); }
+"roko"      { add_token("BREAK", yytext); }
+"nahito"    { add_token("ELSE IF", yytext); }
 
-{RELOP}         { write_token("RELATIONAL_OP", yytext); }
-{ASSIGN}        { write_token("ASSIGNMENT_OP", yytext); }
-{SEMICOLON}     { write_token("SEMICOLON", yytext); }
-{COMMA}         { write_token("COMMA", yytext); }
-{LPAREN}        { write_token("LEFT_PAREN", yytext); }
-{RPAREN}        { write_token("RIGHT_PAREN", yytext); }
-{LBRACE}        { write_token("LEFT_BRACE", yytext); }
-{RBRACE}        { write_token("RIGHT_BRACE", yytext); }
-{INCREMENT}     { write_token("INCREMENT_OP", yytext); }
-{DECREMENT}     { write_token("DECREMENT_OP", yytext); }
+"=="|">="|"<="|"<"|">"|"!="   { add_token("RELOP", yytext); }
+"="         { add_token("ASSIGN", yytext); }
+";"         { add_token("SEMICOLON", yytext); }
+","         { add_token("COMMA", yytext); }
+"("         { add_token("LPAREN", yytext); }
+")"         { add_token("RPAREN", yytext); }
+"{"         { add_token("LBRACE", yytext); }
+"}"         { add_token("RBRACE", yytext); }
+"++"        { add_token("INCREMENT", yytext); }
+"--"        { add_token("DECREMENT", yytext); }
 
-"+"             { write_token("PLUS_OP", yytext); }
-"-"             { write_token("MINUS_OP", yytext); }
-"*"             { write_token("MULTIPLY_OP", yytext); }
-"/"             { write_token("DIVIDE_OP", yytext); }
-"%"             { write_token("MODULUS_OP", yytext); }
 
-{INTEGER}       { write_token("INTEGER_LITERAL", yytext); }
-{FLOAT}         { write_token("FLOAT_LITERAL", yytext); }
-{ID}            { write_token("IDENTIFIER", yytext); }
+"+"         { add_token("PLUS", yytext); }
+"-"         { add_token("MINUS", yytext); }
+"*"         { add_token("MULT", yytext); }
+"/"         { add_token("DIV", yytext); }
+"%"         { add_token("MOD", yytext); }
 
-{QUOTE}([^\"\']|\\{QUOTE})*{QUOTE} { write_token("STRING_LITERAL", yytext); }
-\'.\'           { write_token("CHAR_LITERAL", yytext); }
+{FLOAT}     { add_token("FLOAT_LITERAL", yytext); }
+{INT}       { add_token("INT_LITERAL", yytext); }
+{ID}        { add_token("IDENTIFIER", yytext); }
 
-{WS}            /* Skip whitespace */
-{NEWLINE}       { line_num++; }
+{WS}        /* skip */
+{NEWLINE}   { line_num++; }
 
-"//".*          /* Skip single-line comments */
-"/*"([^*]|"*"[^/])*"*/" /* Skip multi-line comments */
+{QUOTE}([^\"\']|\\{QUOTE})*{QUOTE} { add_token("STRING_LITERAL", yytext); }
+\'.\'           { add_token("CHAR_LITERAL", yytext); }
 
-.               { 
-                  char error_msg[100];
-                  snprintf(error_msg, sizeof(error_msg), "Invalid character: '%s'", yytext);
-                  write_error(error_msg, line_num);
-                }
+"//".*       /* skip single-line comment */
+"/*"([^*]|"*"[^/])*"*/"   /* skip multi-line comment */
+
+.           { add_error(yytext); }
 
 %%
-
-void write_token(const char* type, const char* value) {
-    fprintf(tokens_file, "Line %d: %s -> %s\n", line_num, type, value);
-}
-
-void write_error(const char* message, int line) {
-    fprintf(error_log_file, "Line %d: ERROR - %s\n", line, message);
-}
 
 int main(int argc, char *argv[]) {
+
     if (argc < 2) {
         printf("Usage: %s <input_file>\n", argv[0]);
         return 1;
     }
-    
+
     yyin = fopen(argv[1], "r");
     if (!yyin) {
-        printf("Error: Cannot open input file %s\n", argv[1]);
+        printf("Cannot open file %s\n", argv[1]);
         return 1;
     }
-    
-    tokens_file = fopen("tokens.txt", "w");
-    error_log_file = fopen("error_log.txt", "w");
-    
-    if (!tokens_file || !error_log_file) {
-        printf("Error: Cannot open output files\n");
-        return 1;
-    }
-    
-    fprintf(tokens_file, "=== TOKENS FOUND ===\n");
-    fprintf(error_log_file, "=== ERROR LOG ===\n");
-    
+
+   tokens_file = fopen("tokens.txt", "w");
+    error_file = fopen("error_log.txt", "w");
+
+   if (!tokens_file || !error_file) {
+    printf("Error: Cannot open output files\n");
+    return 1;
+         }
+
+
+    fprintf(tokens_file, "=== TOKENS ===\n");
+    fprintf(error_file, "=== ERRORS ===\n");
+
     yylex();
-    
-    fclose(yyin);
+
     fclose(tokens_file);
-    fclose(error_log_file);
-    
-    printf("Lexical analysis completed.\n");
-    printf("Tokens saved to: tokens.txt\n");
-    printf("Errors saved to: error_log.txt\n");
-    
+    fclose(error_file);
+
+    printf("Done! Tokens → tokens.txt | Errors → error_log.txt\n");
+
     return 0;
 }
