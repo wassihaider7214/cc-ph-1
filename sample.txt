@@ -1,0 +1,51 @@
+adad i;
+adad j;
+adad sum;
+adad limit;
+ashariya avg;
+harf ch;
+
+lo limit;
+
+sum = 0;
+i = 0;
+
+jadtak (i < limit) {
+    sum = sum + i;
+    i = i + 1;
+}
+
+harik (j = 0; j < limit; j = j + 1) {
+    likho j;
+}
+
+jaytay (sum > 100) {
+    likho sum;
+}
+nahito (sum == 100) {
+    likho sum;
+}
+fair {
+    likho 0;
+}
+
+jaytay (sach) {
+    jaytay (sum > 50) {
+        likho sum;
+    }
+}
+
+i = 0;
+jadtak (sach) {
+    jaytay (i > 10) {
+        roko;
+    }
+    likho i;
+    i = i + 1;
+}
+
+sum = (10 + 20) * 3 - 5;
+avg = sum / 2;
+
+likho sum;
+likho avg;
